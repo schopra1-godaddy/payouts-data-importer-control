@@ -1,0 +1,50 @@
+global:
+  database_name: "payment-platform"
+  development_team: "acctdl"
+  development_environment: "dev-private"
+  ingress_version: "5.0.0"
+  schema_name: "invoice-status"
+  schema_version: "1"
+  offset_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  timezone: "UTC"
+  poll_delay: 1
+  bucket_name_suffix: "payment-platform-raw"
+
+logger:
+  type: stdout
+  config:
+    level: DEBUG
+
+reporter:
+  type: console
+  config:
+    output_metrics: true
+    reporting_interval: 60
+
+offset:
+  type: mssql_cdc
+  default_value:
+    lsn: ""
+    seqval: "00000000000000000000"
+
+source:
+  type: mssql_cdc
+  config:
+    host: "PWHYDRASQLLS.dc1.corp.gd"
+    database: "apWebSvc"
+    table: "cdc.Payments_Invoice_Status_CT"
+    creds: "sm://katana/secrets/sql-creds"
+    schema_filter: false
+    index_column: "invoiceStatusID"
+    chunk_size: 30000
+    enable_skipping_cdc: false
+    intermediate_sql_host: "0.0.0.0"
+
+delays: [1, 3, 5, 10, 15, 30]
+
+target:
+  type: s3
+  config:
+    gzip: true
+    ckp_envelope:
+      schema_uri_value: "http://schemas.data.api.godaddy.com/v1/events/payment-platform/Payments.Invoice_Status.json"
