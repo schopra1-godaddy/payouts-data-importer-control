@@ -46,5 +46,6 @@ target:
   type: s3
   config:
     gzip: true
+    folder_prefix: "testing/"  # 👈 Added to isolate this test data
     ckp_envelope:
       schema_uri_value: "http://schemas.data.api.godaddy.com/v1/events/payment-platform/Payments.Invoice_Status.json"
